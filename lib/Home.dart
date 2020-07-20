@@ -18,11 +18,45 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  double _progress = 0;
+  DateTime selectedDate;
 
   @override
   void initState(){
     super.initState();
+    selectedDate = DateTime.now();
+    _loadStorage();
+  }
+
+   _loadStorage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if(!prefs.containsKey('_lastLogged')){
+        prefs.setString('_lastLogged', DateTime.now().toString());
+      } else {
+        selectedDate = DateTime.parse(prefs.getString('_lastLogged'));
+      }
+    });
+  }
+
+  _updateLastLogged() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString('_lastLogged', selectedDate.toString());
+    });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2000, 8),
+        lastDate: DateTime(2101));
+        if (picked != null && picked != selectedDate){
+          setState(() {
+            selectedDate = picked;
+          });
+          _updateLastLogged();
+        }
   }
 
   @override
@@ -42,10 +76,25 @@ class HomeState extends State<Home> {
             style: TextStyle(color: Colors.grey[100],)
           ),
         ),
+        SizedBox(height: 20),
         Center(
-          child: Text("Last logged: 10/30/2020",
-            textScaleFactor: 1, 
-            style: TextStyle(color: Colors.grey[200], fontStyle: FontStyle.italic,)
+          child: InkWell(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Last logged: ",
+                  textScaleFactor: 1.25, 
+                  style: TextStyle(color: Colors.grey[200], fontStyle: FontStyle.italic,)
+                ),
+                Text(selectedDate.month.toString() + '/' + selectedDate.day.toString() + '/' + selectedDate.year.toString(),
+                  textScaleFactor: 1.25, 
+                  style: TextStyle(color: Colors.grey[200], decoration: TextDecoration.underline),
+                ),
+                SizedBox(width: 5),
+                Icon(Icons.calendar_today, color: Colors.white),
+              ],
+            ),
+            onTap: () => _selectDate(context),
           ),
         ),
         Center(
