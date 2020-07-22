@@ -53,53 +53,55 @@ class SettingsState extends State<Settings> {
 
   _updateNotif() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.setString('_notificationWeekly', weekly);
-      prefs.setString('_notifTime', time);
-    });
+    if(mounted){
+      setState(() {
+        prefs.setString('_notificationWeekly', weekly);
+        prefs.setString('_notifTime', time);
 
-    int t = int.parse(time.substring(0, 2));
-    if(weekly == 'None'){
-      widget.cancel_notif();
-    } else if (weekly == "Every Day"){
-      widget.notif_daily(t);
-    } else {
-      switch (weekly){
-        case "Every Monday": {
-          widget.notif_weekly(Day.Monday, t);
-        }
-        break;
+        int t = int.parse(time.substring(0, 2));
+        if(weekly == 'None'){
+          widget.cancel_notif();
+        } else if (weekly == "Every Day"){
+          widget.notif_daily(t);
+        } else {
+          switch (weekly){
+            case "Every Monday": {
+              widget.notif_weekly(Day.Monday, t);
+            }
+            break;
 
-        case "Every Tuesday": {
-          widget.notif_weekly(Day.Tuesday, t);
-        }
-        break;
+            case "Every Tuesday": {
+              widget.notif_weekly(Day.Tuesday, t);
+            }
+            break;
 
-        case "Every Wednesday": {
-          widget.notif_weekly(Day.Wednesday, t);
-        }
-        break;
+            case "Every Wednesday": {
+              widget.notif_weekly(Day.Wednesday, t);
+            }
+            break;
 
-        case "Every Thursday": {
-          widget.notif_weekly(Day.Thursday, t);
-        }
-        break;
+            case "Every Thursday": {
+              widget.notif_weekly(Day.Thursday, t);
+            }
+            break;
 
-        case "Every Friday": {
-          widget.notif_weekly(Day.Friday, t);
-        }
-        break;
+            case "Every Friday": {
+              widget.notif_weekly(Day.Friday, t);
+            }
+            break;
 
-        case "Every Saturday": {
-          widget.notif_weekly(Day.Saturday, t);
-        }
-        break;
+            case "Every Saturday": {
+              widget.notif_weekly(Day.Saturday, t);
+            }
+            break;
 
-        case "Every Sunday": {
-          widget.notif_weekly(Day.Sunday, t);
+            case "Every Sunday": {
+              widget.notif_weekly(Day.Sunday, t);
+            }
+            break;
+          }
         }
-        break;
-      }
+      });
     }
   }
 
