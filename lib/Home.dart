@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Watchlist.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'AuxiliaryWidgets/CircleProgressBar.dart';
+import 'util/CircleProgressBar.dart';
 
 class Home extends StatefulWidget {
   const Home({
@@ -29,13 +29,15 @@ class HomeState extends State<Home> {
 
    _loadStorage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if(!prefs.containsKey('_lastLogged')){
-        prefs.setString('_lastLogged', DateTime.now().toString());
-      } else {
-        selectedDate = DateTime.parse(prefs.getString('_lastLogged'));
-      }
-    });
+    if(mounted){
+      setState(() {
+        if(!prefs.containsKey('_lastLogged')){
+          prefs.setString('_lastLogged', DateTime.now().toString());
+        } else {
+          selectedDate = DateTime.parse(prefs.getString('_lastLogged'));
+        }
+      });
+    }
   }
 
   _updateLastLogged() async {
