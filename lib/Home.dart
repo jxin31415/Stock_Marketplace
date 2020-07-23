@@ -103,9 +103,9 @@ class HomeState extends State<Home> {
           child: ProgressCard(),
         ),
         SizedBox(height: 30),
-        FlatButton(
-          onPressed: () => goToTab(1, widget.controller),
-          child: Column(
+        ListTile(
+          onTap: () => goToTab(1, widget.controller),
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text("Open Positions",

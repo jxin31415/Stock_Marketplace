@@ -1,114 +1,266 @@
+import 'dart:async';
+
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
-class Watchlist extends StatelessWidget {
+class Watchlist extends StatefulWidget {
+  
+  const Watchlist({Key key
+  }) : super(key: key);
+
+  @override
+  WatchlistState createState() {
+    return WatchlistState();
+  }
+}
+
+class WatchlistState extends State<Watchlist> {
+  
+  var database;
+  var elements;
+
+  @override
+  void initState() {
+    super.initState();
+    _openDatabase().then((db) {
+      watchlistElements().then((lis){
+        setState(() {
+          elements = lis;
+          database = db;
+        });
+      });
+    });
+  }
+
+  Future<Database> _openDatabase() async {
+    // Open the database and store the reference.
+    return database = openDatabase(
+      // Set the path to the database. Note: Using the `join` function from the
+      // `path` package is best practice to ensure the path is correctly
+      // constructed for each platform.
+      join(await getDatabasesPath(), 'watchlist_db.db'),
+      onCreate: (db, version) {
+        // Run the CREATE TABLE statement on the database.
+        return db.execute(
+          "CREATE TABLE watchlist(id INTEGER PRIMARY KEY, ticker TEXT, title TEXT, entries TEXT)",
+        );
+      },
+      // Set the version. This executes the onCreate function and provides a
+      // path to perform database upgrades and downgrades.
+      version: 1,
+    );
+  }
+
+  Future<void> insertWatchlistElement(WatchlistElement element) async {
+    // Get a reference to the database.
+    final Database db = await database;
+
+    await db.insert(
+      'watchlist',
+      element.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<WatchlistElement>> watchlistElements() async {
+    // Get a reference to the database.
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query('watchlist');
+
+    return List.generate(maps.length, (i) {
+      String s = maps[i]['entries'];
+      return WatchlistElement(
+        id: maps[i]['id'],
+        ticker: maps[i]['ticker'],
+        title: maps[i]['title'],
+        entries: s.split(','),
+      );
+    });
+  }
+
+  Future<void> updateWatchlist(WatchlistElement element) async {
+    // Get a reference to the database.
+    final db = await database;
+
+    await db.update(
+      'watchlist',
+      element.toMap(),
+      where: "id = ?",
+      whereArgs: [element.id],
+    );
+  }
+
+  Future<void> deleteWatchlistElement(int id) async {
+    // Get a reference to the database.
+    final db = await database;
+
+    await db.delete(
+      'watchlist',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: AppBar(
-          backgroundColor: Colors.purple[900],
-          automaticallyImplyLeading: true,
-          leading: IconButton(icon:Icon(Icons.arrow_back),
-            onPressed:() => Navigator.pop(context, false),
-          )
-      ),
-      backgroundColor: Colors.grey[850],
-      body: ListView(
-        padding: EdgeInsets.all(30),
+    if(database == null || elements == null){
+      return Center(child:SizedBox(
+        height: 50,
+        width: 50,
+        child: CircularProgressIndicator(),
+      ),);
+    } else {
+      List<Widget> lis = new List();
+      lis.add(Container(height: 20,),);
+      lis.add(Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Container(height: 20,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text("Watchlist",
-                textScaleFactor: 2, 
-                style: TextStyle(color: Colors.white)
-              ),
-              Container(width: 30),
-              Container(
-                width: 170,
-                padding: EdgeInsets.all(5),
-                color: Colors.grey[200],
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.search, color: Colors.black),
-                    Text("Search",
-                      textScaleFactor: 1,
-                      style: TextStyle(color: Colors.grey[800], fontStyle: FontStyle.italic),
-                    )
-                  ],
+          Text("Watchlist",
+            textScaleFactor: 2, 
+            style: TextStyle(color: Colors.white)
+          ),
+          Container(width: 30),
+          Container(
+            width: 170,
+            padding: EdgeInsets.all(5),
+            color: Colors.grey[200],
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.search, color: Colors.black),
+                Text("Search",
+                  textScaleFactor: 1,
+                  style: TextStyle(color: Colors.grey[800], fontStyle: FontStyle.italic),
                 )
-              )
-            ]
-          ),
-          Container(height: 25),
-          Container(
-            child: Text("DIS",
-              textScaleFactor: 1.5,
-              style: TextStyle(color: Colors.white),
+              ],
             )
-          ),
-          Container(height: 20),
-          Container(
-            child: Text("Wait Reason",
-              textScaleFactor: 1.25,
-              style: TextStyle(color: Colors.white),
-            )
-          ),
-          Container(
-            padding: EdgeInsets.only(left: 20),
-            color: Colors.white,
-            child: TextField(
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Enter an entry here'
-              ),
-            ),
-          ),
-          SizedBox(height: 5),
-          Text("+ add entry",
-            textScaleFactor: 0.75,
-            style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
-          ),
-          Container(height: 75),
-
-          Container(
-            child: Text("Ticker",
-              textScaleFactor: 1.5,
-              style: TextStyle(color: Colors.white),
-            )
-          ),
-          Container(height: 20),
-          Container(
-            child: Text("Title",
-              textScaleFactor: 1.25,
-              style: TextStyle(color: Colors.white),
-            )
-          ),
-          Container(
-            padding: EdgeInsets.only(left: 20),
-            color: Colors.white,
-            child: TextField(
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Enter an entry here'
-              ),
-            ),
-          ),
-          SizedBox(height: 5),
-          Text("+ add entry",
-            textScaleFactor: 0.75,
-            style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
-          ),
+          )
         ]
-      )
-    );
-  } 
+      ),);
+      lis.add(Container(height: 25,),);
+      for(var i = 0; i < elements.length; i++){
+        lis.add(elements[i]);
+      }
 
-  void on_pressed () {
+      //Testing
+      List<String> str = ['entry1', 'entry2', 'entry3'];
+      lis.add(FlatButton(
+        child: Text("CLICK ME TO ADD TO DATABASE"),
+        onPressed: () async {
+          await insertWatchlistElement(WatchlistElement(id: 1, ticker: "Ticker", title: "Title", entries: str));
+          setState((){
+            watchlistElements().then((lis){
+            setState(() {
+              elements = lis;
+            });
+          });
+          });
+        }
+      ));
+      lis.add(FlatButton(
+        child: Text("CLICK ME TO ADD TO DATABASE"),
+        onPressed: () async {
+          await deleteWatchlistElement(1);
+          setState((){
+            watchlistElements().then((lis){
+            setState(() {
+              elements = lis;
+            });
+          });
+          });
+        }
+      ));
+
+      return new Scaffold(
+        appBar: AppBar(
+            backgroundColor: Colors.purple[900],
+            automaticallyImplyLeading: true,
+            leading: IconButton(icon:Icon(Icons.arrow_back),
+              onPressed:() => Navigator.pop(context, false),
+            )
+        ),
+        backgroundColor: Colors.grey[850],
+        body: ListView(
+          padding: EdgeInsets.all(30),
+          children: lis,
+        )
+      );
+    } 
+  }
+}
+
+class WatchlistElement extends StatelessWidget {
+  final int id;
+  final String ticker;
+  final String title;
+  final List<String> entries;
+
+  WatchlistElement({this.id, this.ticker, this.title, this.entries});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'ticker': ticker,
+      'title': title,
+      'entries': entries.join(','),
+    };
   }
 
-  void on_changed(dynamic){
-
+  @override
+  Widget build(BuildContext context){
+    List<Widget> lis = new List();
+    lis.add(Container(
+      child: Text(ticker,
+        textScaleFactor: 1.5,
+        style: TextStyle(color: Colors.white),
+      )
+    ),);
+    lis.add(
+      Container(height: 15),
+    );
+    lis.add(
+      Container(
+        child: Text(title,
+          textScaleFactor: 1.25,
+          style: TextStyle(color: Colors.white),
+        )
+      ),
+    );
+    lis.add(SizedBox(height: 5),);
+    for(var i = 0; i < entries.length; i++){
+      lis.add(Text(
+        "   • " + entries[i],
+        textScaleFactor: 1,
+        style: TextStyle(color: Colors.white),
+      ));
+      lis.add(SizedBox(height: 5),);
+    }
+    lis.add(SizedBox(height: 5),);
+    lis.add(
+      Container(
+        padding: EdgeInsets.only(left: 20),
+        color: Colors.white,
+        child: TextField(
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: 'Enter an entry here'
+          ),
+        ),
+      ),
+    );
+    lis.add(
+      SizedBox(height: 5),
+    );
+    lis.add(Text("+ add entry",
+      textScaleFactor: 0.75,
+      style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
+    ),);
+    lis.add(Container(height: 75),);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lis,
+    );
   }
 }
