@@ -112,7 +112,7 @@ class HomeState extends State<Home> {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context)=> Watchlist(location: 1))
               ).then((value){
-                Future.delayed(Duration(milliseconds: 20), (){Navigator.popAndPushNamed(context, ModalRoute.of(context).settings.name);});
+                Future.delayed(Duration.zero, (){Navigator.popAndPushNamed(context, ModalRoute.of(context).settings.name);});
 
               });
             }
