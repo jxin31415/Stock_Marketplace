@@ -18,8 +18,13 @@ class Watchlist extends StatefulWidget {
 
 class WatchlistState extends State<Watchlist> {
   
-  var database;
-  var elements;
+  Database database;
+  List<WatchlistElement> elements;
+
+  final _formKey = GlobalKey<FormState>();
+  String newTicker;
+  String newTitle;
+  List<String> newEntries;
 
   @override
   void initState() {
@@ -29,6 +34,9 @@ class WatchlistState extends State<Watchlist> {
         setState(() {
           elements = lis;
           database = db;
+          newEntries = new List();
+          newTicker = 'Placeholder';
+          newTitle = 'Placeholder';
         });
       });
     });
@@ -36,7 +44,7 @@ class WatchlistState extends State<Watchlist> {
 
   Future<Database> _openDatabase() async {
     // Open the database and store the reference.
-    return database = openDatabase(
+    return database = await openDatabase(
       // Set the path to the database. Note: Using the `join` function from the
       // `path` package is best practice to ensure the path is correctly
       // constructed for each platform.
@@ -44,7 +52,7 @@ class WatchlistState extends State<Watchlist> {
       onCreate: (db, version) {
         // Run the CREATE TABLE statement on the database.
         return db.execute(
-          "CREATE TABLE watchlist(id INTEGER PRIMARY KEY, ticker TEXT, title TEXT, entries TEXT)",
+          "CREATE TABLE watchlist(id INTEGER PRIMARY KEY AUTOINCREMENT, ticker TEXT, title TEXT, entries TEXT)",
         );
       },
       // Set the version. This executes the onCreate function and provides a
@@ -55,7 +63,7 @@ class WatchlistState extends State<Watchlist> {
 
   Future<void> insertWatchlistElement(WatchlistElement element) async {
     // Get a reference to the database.
-    final Database db = await database;
+    final Database db = database;
 
     await db.insert(
       'watchlist',
@@ -66,7 +74,7 @@ class WatchlistState extends State<Watchlist> {
 
   Future<List<WatchlistElement>> watchlistElements() async {
     // Get a reference to the database.
-    final Database db = await database;
+    final Database db = database;
 
     final List<Map<String, dynamic>> maps = await db.query('watchlist');
 
@@ -83,7 +91,7 @@ class WatchlistState extends State<Watchlist> {
 
   Future<void> updateWatchlist(WatchlistElement element) async {
     // Get a reference to the database.
-    final db = await database;
+    final db = database;
 
     await db.update(
       'watchlist',
@@ -95,12 +103,11 @@ class WatchlistState extends State<Watchlist> {
 
   Future<void> deleteWatchlistElement(int id) async {
     // Get a reference to the database.
-    final db = await database;
-
+    final db = database;
     await db.delete(
       'watchlist',
-      where: "id = ?",
-      whereArgs: [id],
+      where: null,
+      whereArgs: null,
     );
   }
 
@@ -143,24 +150,105 @@ class WatchlistState extends State<Watchlist> {
       for(var i = 0; i < elements.length; i++){
         lis.add(elements[i]);
       }
+      lis.add(SizedBox(height: 20));
 
-      //Testing
-      List<String> str = ['entry1', 'entry2', 'entry3'];
+      lis.add(
+        Form(
+          key: _formKey,
+          child: Card(
+            child: Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Column(
+              children: <Widget>[
+                TextFormField(
+                  decoration: const InputDecoration(
+                    hintText: 'Enter New Ticker',
+                  ),
+
+                  validator: (value){
+                    if(value.isEmpty){
+                      return 'Please enter a valid ticker';
+                    }
+                    return null;
+                  },
+
+                  onSaved: (val) {
+                    setState((){
+                      newTicker = val;
+                    });
+                  }
+                ),
+
+                TextFormField(
+                  decoration: const InputDecoration(
+                    hintText: 'Enter New Title',
+                  ),
+
+                  validator: (value){
+                    if(value.isEmpty){
+                      return 'Please enter a valid title';
+                    }
+                    return null;
+                  },
+
+                  onSaved: (val) {
+                    setState((){
+                      newTitle = val;
+                    });
+                  }
+                ),
+                SizedBox(height: 30),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    hintText: 'Enter Initial Entry (optional)',
+                  ),
+
+                  validator: (value){
+                    return null;
+                  },
+
+                  onSaved: (val) {
+                    setState((){
+                      if(val != ''){
+                        print(val);
+                        newEntries.add(val);
+                        print(newEntries);
+                      }
+                    });
+                  }
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: RaisedButton(
+                    color: Colors.blue,
+                    onPressed: () async {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                        await insertWatchlistElement(WatchlistElement(ticker: newTicker, title: newTitle, entries: newEntries));
+                        setState((){
+                          watchlistElements().then((lis){
+                            setState(() {
+                              elements = lis;
+                            });
+                            _formKey.currentState.reset();
+                            newEntries.clear();
+                          });
+                        });
+                      }
+                    },
+                    child: Text('Submit'),
+                  ),
+                ),
+              ],
+            ),),
+            elevation: 50,
+            shadowColor: Colors.purple[700],
+            color: Colors.white,
+          )
+        ),
+      );
+
       lis.add(FlatButton(
-        child: Text("CLICK ME TO ADD TO DATABASE"),
-        onPressed: () async {
-          await insertWatchlistElement(WatchlistElement(id: 1, ticker: "Ticker", title: "Title", entries: str));
-          setState((){
-            watchlistElements().then((lis){
-            setState(() {
-              elements = lis;
-            });
-          });
-          });
-        }
-      ));
-      lis.add(FlatButton(
-        child: Text("CLICK ME TO ADD TO DATABASE"),
+        child: Text("CLICK ME TO CLEAR DATABASE"),
         onPressed: () async {
           await deleteWatchlistElement(1);
           setState((){
@@ -204,7 +292,7 @@ class WatchlistElement extends StatelessWidget {
       'id': id,
       'ticker': ticker,
       'title': title,
-      'entries': entries.join(','),
+      'entries': (entries.length == 0) ? '' : entries.join(','),
     };
   }
 
@@ -218,7 +306,7 @@ class WatchlistElement extends StatelessWidget {
       )
     ),);
     lis.add(
-      Container(height: 15),
+      SizedBox(height: 15),
     );
     lis.add(
       Container(
@@ -230,12 +318,14 @@ class WatchlistElement extends StatelessWidget {
     );
     lis.add(SizedBox(height: 5),);
     for(var i = 0; i < entries.length; i++){
-      lis.add(Text(
-        "   • " + entries[i],
-        textScaleFactor: 1,
-        style: TextStyle(color: Colors.white),
-      ));
-      lis.add(SizedBox(height: 5),);
+      if(entries[i] != ''){
+        lis.add(Text(
+          "   • " + entries[i],
+          textScaleFactor: 1,
+          style: TextStyle(color: Colors.white),
+        ));
+        lis.add(SizedBox(height: 5),);
+      }
     }
     lis.add(SizedBox(height: 5),);
     lis.add(
@@ -257,10 +347,18 @@ class WatchlistElement extends StatelessWidget {
       textScaleFactor: 0.75,
       style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
     ),);
-    lis.add(Container(height: 75),);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: lis,
+    lis.add(Container(height: 20),);
+    return Card(
+      elevation: 50,
+      shadowColor: Colors.purple[700],
+      color: Colors.grey[800],
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: lis,
+        ),
+      ),
     );
   }
 }
