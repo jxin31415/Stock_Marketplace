@@ -98,36 +98,45 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Stock Marketplace',
-      theme: ThemeData(
-        canvasColor: Colors.blue[900],
-      ),
-      home: Scaffold(
-          backgroundColor: Colors.black,
-          bottomNavigationBar: new Material(
-            color: Colors.deepPurple[900],
-            child: new TabBar(
-              controller: _tabController,
-              tabs: <Tab> [
-                new Tab(icon: new Icon(Icons.track_changes)),
-                new Tab(icon: new Icon(Icons.book)),
-                new Tab(icon: new Icon(Icons.home)),
-                new Tab(icon: new Icon(Icons.settings)),
-                new Tab(icon: new Icon(Icons.help)),
-              ]
-           )
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: MaterialApp(
+        title: 'Stock Marketplace',
+        theme: ThemeData(
+          canvasColor: Colors.blue[900],
         ),
-        body: new TabBarView(
-          controller: _tabController,
-          children: <Widget>[
-            new goal.Goals(),
-            new journal.Journal(),
-            new home.Home(controller: _tabController),
-            new settings.Settings(notif_daily: _dailyNotif, notif_weekly: _weeklyNotif, cancel_notif: _cancel,),
-            new help.Help(),
-          ]
-        ) ,
+        home: Scaffold(
+            backgroundColor: Colors.black,
+            bottomNavigationBar: new Material(
+              color: Colors.deepPurple[900],
+              child: new TabBar(
+                controller: _tabController,
+                tabs: <Tab> [
+                  new Tab(icon: new Icon(Icons.track_changes)),
+                  new Tab(icon: new Icon(Icons.book)),
+                  new Tab(icon: new Icon(Icons.home)),
+                  new Tab(icon: new Icon(Icons.settings)),
+                  new Tab(icon: new Icon(Icons.help)),
+                ]
+            )
+          ),
+          body: new TabBarView(
+            controller: _tabController,
+            children: <Widget>[
+              new goal.Goals(),
+              new journal.Journal(),
+              new home.Home(controller: _tabController),
+              new settings.Settings(notif_daily: _dailyNotif, notif_weekly: _weeklyNotif, cancel_notif: _cancel,),
+              new help.Help(),
+            ]
+          ) ,
+        ),
       ),
     );
   }

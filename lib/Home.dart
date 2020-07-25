@@ -19,12 +19,16 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   DateTime selectedDate;
+  Watchlist wl;
+  double position;
 
   @override
   void initState(){
     super.initState();
     selectedDate = DateTime.now();
     _loadStorage();
+    wl = Watchlist(location: 0);
+    position = 0;
   }
 
    _loadStorage() async {
@@ -63,10 +67,9 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    
     return new Scaffold(
       backgroundColor: Colors.grey[850],
-      body: ListView(
+      body: NotificationListener<ScrollUpdateNotification>( child : ListView(
         padding: const EdgeInsets.all(15),
         children: <Widget>[
         Container(
@@ -104,6 +107,32 @@ class HomeState extends State<Home> {
         ),
         SizedBox(height: 30),
         ListTile(
+          onTap: (){
+            if(Navigator != null){
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context)=> Watchlist(location: 1))
+              ).then((value){
+                Future.delayed(Duration(milliseconds: 20), (){Navigator.popAndPushNamed(context, ModalRoute.of(context).settings.name);});
+
+              });
+            }
+          }, 
+          title: Row(
+            children: <Widget>[
+              Text("Watchlist",
+                textScaleFactor: 1.5, 
+                style: TextStyle(color: Colors.grey[200],)
+              ),
+              Card( margin: EdgeInsets.only(left: 20),
+              child: Padding(padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10), child:Text("See More",
+                textScaleFactor: 1, 
+                style: TextStyle(color: Colors.black, fontStyle: FontStyle.italic,)
+              ),),),
+            ],
+          ),
+        ),
+        Watchlist(location: 0),
+        ListTile(
           onTap: () => goToTab(1, widget.controller),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,71 +162,15 @@ class HomeState extends State<Home> {
           )
         ),
         SizedBox(height: 20),
-        ListTile(
-          onTap: (){
-            if(Navigator != null){
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context)=> Watchlist())
-              );
-            }
-          }, 
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                child: Text("Watchlist",
-                  textScaleFactor: 1.5, 
-                  style: TextStyle(color: Colors.grey[200],)
-                ),
-              ),
-              SizedBox(height: 10),
-              Container(
-                margin: EdgeInsets.only(left: 30),
-                child: generateWatchListElement("DIS", "never gonna give you up, never gonna let you down. never gonna run around and desert you. never gonna make you cry, never gonna say goodbye. never gonna tell and lie and hurt you"),
-              ),
-              Container(
-                height: 30,
-              ),
-              Container(
-                margin: EdgeInsets.only(left: 30),
-                child: generateWatchListElement("FRC", "oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea oh yeah yeah oh yea yea"),
-              ),
-            ]
-          ),
-        ),
       ],
-
+      ),
+      onNotification: (notif) {
+        position = notif.metrics.pixels;
+        return false;
+      }
       )
     );
   } 
-
-  Widget generateWatchListElement(String name, String reason){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          child: Text(name,
-            textScaleFactor: 1.25, 
-            style: TextStyle(color: Colors.grey[200],)
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 10),
-          child: Text("Watch Reasons",
-            textScaleFactor: 1, 
-            style: TextStyle(color: Colors.grey[200],)
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 10),
-          child: Text(reason,
-            textScaleFactor: 1, 
-            style: TextStyle(color: Colors.grey[200],)
-          ),
-        )
-      ]
-    );
-  }
 
   Widget generatePosition(String name, String shares, String growth) {
     return Row(
