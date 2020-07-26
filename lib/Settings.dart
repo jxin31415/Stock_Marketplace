@@ -145,77 +145,132 @@ class SettingsState extends State<Settings> {
             //   decoration: BoxDecoration(color: Colors.purple[600], borderRadius: BorderRadius.all(Radius.circular(10))),
             //   child: rowView("Portfolio", "My Portfolio", 1.25),
             // ),
-            Container(height: 20,),
+            // Container(height: 20,),
+            // Container(
+            //   height: 50,
+            //   padding: EdgeInsets.only(left: 20),
+            //   alignment: Alignment.centerLeft,
+            //   decoration: BoxDecoration(color: Colors.purple[600], borderRadius: BorderRadius.all(Radius.circular(10))),
+            //   child: Text("Font Size",
+            //     textScaleFactor: 1.5,
+            //     style: TextStyle(
+            //       color: Colors.white         
+            //     )
+            //   ),
+            // ),
+            // Container(height: 20,),
+            // Container(
+            //   alignment: Alignment.center,
+            //   child: Row(
+            //     crossAxisAlignment: CrossAxisAlignment.center,
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: <Widget>[
+            //       Container( 
+            //         width: 50,
+            //         child: Text("Aa",
+            //           textScaleFactor: 1.25,
+            //           style: TextStyle(
+            //             color: Colors.white         
+            //           )
+            //         ),
+            //       ),
+            //       Container(
+            //         width: 50,
+            //         child: Text("Aa",
+            //           textScaleFactor: 1.5,
+            //           style: TextStyle(
+            //             color: Colors.white         
+            //           )
+            //         ),
+            //       ),
+            //       Container(
+            //         width: 50,
+            //         child: Text("Aa",
+            //           textScaleFactor: 1.75,
+            //           style: TextStyle(
+            //             color: Colors.white         
+            //           )
+            //         ),
+            //       ),
+            //       Container(
+            //         width: 50,
+            //         child: Text("Aa",
+            //           textScaleFactor: 2,
+            //           style: TextStyle(
+            //             color: Colors.white         
+            //           )
+            //         ),
+            //       ),
+            //       Container(
+            //         width: 50,
+            //         child: Text("Aa",
+            //           textScaleFactor: 2.25,
+            //           style: TextStyle(
+            //             color: Colors.white         
+            //           )
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            SizedBox(height: 25),
+            Center(child: Text("Need Help?",
+              textScaleFactor: 2,
+              style: TextStyle(
+                color: Colors.white         
+              )
+            ),),
+            SizedBox(height: 10),
+            Center(child: Text("Contact us at",
+              textScaleFactor: 1.5,
+              style: TextStyle(
+                color: Colors.white         
+              )
+            ),),
+            SizedBox(height: 10),
             Container(
-              height: 50,
-              padding: EdgeInsets.only(left: 20),
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(color: Colors.purple[600], borderRadius: BorderRadius.all(Radius.circular(10))),
-              child: Text("Font Size",
-                textScaleFactor: 1.5,
-                style: TextStyle(
-                  color: Colors.white         
-                )
-              ),
-            ),
-            Container(height: 20,),
-            Container(
-              alignment: Alignment.center,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container( 
-                    width: 50,
-                    child: Text("Aa",
-                      textScaleFactor: 1.25,
-                      style: TextStyle(
-                        color: Colors.white         
-                      )
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    child: Text("Aa",
-                      textScaleFactor: 1.5,
-                      style: TextStyle(
-                        color: Colors.white         
-                      )
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    child: Text("Aa",
-                      textScaleFactor: 1.75,
-                      style: TextStyle(
-                        color: Colors.white         
-                      )
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    child: Text("Aa",
-                      textScaleFactor: 2,
-                      style: TextStyle(
-                        color: Colors.white         
-                      )
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    child: Text("Aa",
-                      textScaleFactor: 2.25,
-                      style: TextStyle(
-                        color: Colors.white         
-                      )
-                    ),
-                  ),
-                ],
+              child: Container(
+                decoration: BoxDecoration(color: Colors.blue[900], borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: columnView(),
               ),
             ),
           ],
         ).toList(),
       ),
+    );
+  }
+
+  Widget columnView(){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        mediaItem("2585bhsrobotics@gmail.com", Icons.email),
+        mediaItem("(832) 999 - 9999", Icons.phone),
+        mediaItem("5100 Maple Street, Bellaire, TX", Icons.store_mall_directory),
+      ],
+    );
+  }
+
+  Widget mediaItem(String contact, IconData icon){
+    return Container(
+      padding: EdgeInsets.only(left: 20),
+      height: 50,
+      child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          width: 20,
+          child: Icon(icon, color: Colors.blue[200]),
+        ),
+        Container(width: 10),
+        Text(contact,
+          textScaleFactor: 1.25,
+          style: TextStyle(
+            color: Colors.white         
+          )
+        ),
+      ],
+     ),
     );
   }
 

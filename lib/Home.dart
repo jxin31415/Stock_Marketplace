@@ -107,16 +107,7 @@ class HomeState extends State<Home> {
         ),
         SizedBox(height: 30),
         ListTile(
-          onTap: (){
-            if(Navigator != null){
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context)=> Watchlist(location: 1))
-              ).then((value){
-                Future.delayed(Duration.zero, (){Navigator.popAndPushNamed(context, ModalRoute.of(context).settings.name);});
-
-              });
-            }
-          }, 
+          onTap: () => goToTab(3, widget.controller),
           title: Row(
             children: <Widget>[
               Text("Watchlist",
@@ -132,6 +123,7 @@ class HomeState extends State<Home> {
           ),
         ),
         Watchlist(location: 0),
+        SizedBox(height: 40),
         ListTile(
           onTap: () => goToTab(1, widget.controller),
           title: Column(

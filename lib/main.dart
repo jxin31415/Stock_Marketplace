@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'Goals.dart' as goal;
 import 'Journal.dart' as journal;
 import 'Home.dart' as home;
-import 'Help.dart' as help;
+import 'Watchlist.dart' as watchlist;
 import 'Settings.dart' as settings;
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -121,8 +121,8 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                   new Tab(icon: new Icon(Icons.track_changes)),
                   new Tab(icon: new Icon(Icons.book)),
                   new Tab(icon: new Icon(Icons.home)),
+                  new Tab(icon: new Icon(Icons.bookmark_border)),
                   new Tab(icon: new Icon(Icons.settings)),
-                  new Tab(icon: new Icon(Icons.help)),
                 ]
             )
           ),
@@ -132,8 +132,8 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               new goal.Goals(),
               new journal.Journal(),
               new home.Home(controller: _tabController),
+              new watchlist.Watchlist(location: 1),
               new settings.Settings(notif_daily: _dailyNotif, notif_weekly: _weeklyNotif, cancel_notif: _cancel,),
-              new help.Help(),
             ]
           ) ,
         ),

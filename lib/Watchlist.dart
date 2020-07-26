@@ -33,15 +33,27 @@ class WatchlistState extends State<Watchlist> {
     super.initState();
     _openDatabase().then((db) {
       watchlistElements().then((lis){
-        setState(() {
-          elements = lis;
-          database = db;
-          newEntries = new List();
-          newTicker = 'Placeholder';
-          newTitle = 'Placeholder';
-        });
+        if(mounted){
+          setState(() {
+            elements = lis;
+            database = db;
+            newEntries = new List();
+            newTicker = 'Placeholder';
+            newTitle = 'Placeholder';
+          });
+        }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    if(elements != null){
+      for(WatchlistElement each in elements){
+        each.controller.dispose();
+      }
+    }
+    super.dispose();
   }
 
   Future<Database> _openDatabase() async {
@@ -110,6 +122,7 @@ class WatchlistState extends State<Watchlist> {
         title: maps[i]['title'],
         entries: s.split(','),
         delete: this,
+        controller: TextEditingController(),
       );
     });
   }
@@ -124,8 +137,8 @@ class WatchlistState extends State<Watchlist> {
       ),);
     } else {
       List<Widget> lis = new List();
-      lis.add(Container(height: 20,),);
       if(widget.location == 1){
+        lis.add(SizedBox(height: 50));
         lis.add(Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
@@ -153,12 +166,102 @@ class WatchlistState extends State<Watchlist> {
         lis.add(Container(height: 25,),);
       }
       for(var i = 0; i < elements.length && i < 2; i++){
-        lis.add(elements[i]);
+        List<Widget> element = new List();
+        element.addAll(elements[i].list(context));
+        element.add(SizedBox(height: 5),);
+        element.add(
+          Container(
+            padding: EdgeInsets.only(left: 20),
+            color: Colors.white,
+            child: TextField(
+              controller: elements[i].controller,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Enter an entry here'
+              ),
+              onSubmitted: (String value) async {
+                int id = elements[i].id;
+                String ticker = elements[i].ticker;
+                String title = elements[i].title;
+                List<String> entries = elements[i].entries;
+                entries.add(value);
+                await updateWatchlist(WatchlistElement(id: id, ticker: ticker, title: title, entries: entries));
+                if(mounted){
+                  setState((){
+                    watchlistElements().then((li){
+                      setState(() {
+                        elements = li;
+                      });
+                    });
+                  });
+                }
+                elements[i].controller.clear();
+              },
+            ),
+          ),
+        );
+        lis.add(Card(
+          elevation: 50,
+          shadowColor: Colors.purple[700],
+          color: Colors.grey[800],
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: element,
+            ),
+          ),
+        ));
       }
 
       if(widget.location == 1){
         for(var i = 2; i < elements.length; i++){
-          lis.add(elements[i]);
+          List<Widget> element = new List();
+          element.addAll(elements[i].list(context));
+          element.add(SizedBox(height: 5),);
+          element.add(
+            Container(
+              padding: EdgeInsets.only(left: 20),
+              color: Colors.white,
+              child: TextField(
+                controller: elements[i].controller,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Enter an entry here'
+                ),
+                onSubmitted: (String value) async {
+                  int id = elements[i].id;
+                  String ticker = elements[i].ticker;
+                  String title = elements[i].title;
+                  List<String> entries = elements[i].entries;
+                  entries.add(value);
+                  await updateWatchlist(WatchlistElement(id: id, ticker: ticker, title: title, entries: entries));
+                  if(mounted){
+                    setState((){
+                      watchlistElements().then((li){
+                        setState(() {
+                          elements = li;
+                        });
+                      });
+                    });
+                  }
+                  elements[i].controller.clear();
+                },
+              ),
+            ),
+          );
+          lis.add(Card(
+            elevation: 50,
+            shadowColor: Colors.purple[700],
+            color: Colors.grey[800],
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: element,
+              ),
+            ),
+          ));
         }
         lis.add(SizedBox(height: 20));
 
@@ -181,9 +284,11 @@ class WatchlistState extends State<Watchlist> {
                     },
 
                     onSaved: (val) {
-                      setState((){
-                        newTicker = val;
-                      });
+                      if(mounted){
+                        setState((){
+                          newTicker = val;
+                        });
+                      }
                     }
                   ),
 
@@ -200,9 +305,11 @@ class WatchlistState extends State<Watchlist> {
                     },
 
                     onSaved: (val) {
-                      setState((){
-                        newTitle = val;
-                      });
+                      if(mounted){
+                        setState((){
+                          newTitle = val;
+                        });
+                      }
                     }
                   ),
                   SizedBox(height: 30),
@@ -216,13 +323,15 @@ class WatchlistState extends State<Watchlist> {
                     },
 
                     onSaved: (val) {
-                      setState((){
-                        if(val != ''){
-                          print(val);
-                          newEntries.add(val);
-                          print(newEntries);
-                        }
-                      });
+                      if(mounted){
+                        setState((){
+                          if(val != ''){
+                            print(val);
+                            newEntries.add(val);
+                            print(newEntries);
+                          }
+                        });
+                      }
                     }
                   ),
 
@@ -234,15 +343,17 @@ class WatchlistState extends State<Watchlist> {
                         if (_formKey.currentState.validate()) {
                           _formKey.currentState.save();
                           await insertWatchlistElement(WatchlistElement(ticker: newTicker, title: newTitle, entries: newEntries));
-                          setState((){
-                            watchlistElements().then((lis){
-                              setState(() {
-                                elements = lis;
+                          if(mounted){
+                            setState((){
+                              watchlistElements().then((lis){
+                                setState(() {
+                                  elements = lis;
+                                });
+                                _formKey.currentState.reset();
+                                newEntries.clear();
                               });
-                              _formKey.currentState.reset();
-                              newEntries.clear();
                             });
-                          });
+                          }
                         }
                       },
                       child: Text('Submit'),
@@ -261,20 +372,6 @@ class WatchlistState extends State<Watchlist> {
 
       if(widget.location == 1){
         return new Scaffold(
-          appBar: AppBar(
-              backgroundColor: Colors.purple[900],
-              automaticallyImplyLeading: true,
-              leading: IconButton(icon:Icon(Icons.arrow_back),
-                onPressed:() { 
-                  Navigator.pop(context, true);
-                  FocusScopeNode currentFocus = FocusScope.of(context);
-
-                  if (!currentFocus.hasPrimaryFocus) {
-                    currentFocus.unfocus();
-                  }     
-                }
-              )
-          ),
           backgroundColor: Colors.grey[850],
           body: ListView(
             padding: EdgeInsets.all(30),
@@ -290,15 +387,16 @@ class WatchlistState extends State<Watchlist> {
   }
 }
 
-class WatchlistElement extends StatelessWidget {
+class WatchlistElement {
   final int id;
   final String ticker;
   final String title;
   final List<String> entries;
   final WatchlistState delete;
+  final TextEditingController controller;
 
 
-  WatchlistElement({this.id, this.ticker, this.title, this.entries, this.delete});
+  WatchlistElement({this.id, this.ticker, this.title, this.entries, this.delete, this.controller});
 
   Map<String, dynamic> toMap() {
     return {
@@ -309,8 +407,7 @@ class WatchlistElement extends StatelessWidget {
     };
   }
 
-  @override
-  Widget build(BuildContext context){
+  List<Widget> list(BuildContext context){
     List<Widget> lis = new List();
     lis.add(
       Row(
@@ -326,9 +423,11 @@ class WatchlistElement extends StatelessWidget {
               print("DELETING");
               delete.deleteWatchlistElement(id).then((void d){
                 delete.watchlistElements().then((lis){
-                  delete.setState(() {
-                    delete.elements = lis;
-                  });
+                  if(delete.mounted){
+                    delete.setState(() {
+                      delete.elements = lis;
+                    });
+                  }
                 });
               });
             }
@@ -359,37 +458,6 @@ class WatchlistElement extends StatelessWidget {
       }
     }
     lis.add(SizedBox(height: 5),);
-    lis.add(
-      Container(
-        padding: EdgeInsets.only(left: 20),
-        color: Colors.white,
-        child: TextField(
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: 'Enter an entry here'
-          ),
-        ),
-      ),
-    );
-    lis.add(
-      SizedBox(height: 5),
-    );
-    lis.add(Text("+ add entry",
-      textScaleFactor: 0.75,
-      style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
-    ),);
-    lis.add(Container(height: 20),);
-    return Card(
-      elevation: 50,
-      shadowColor: Colors.purple[700],
-      color: Colors.grey[800],
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: lis,
-        ),
-      ),
-    );
+    return lis;
   }
 }
