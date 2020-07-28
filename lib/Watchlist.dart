@@ -417,10 +417,9 @@ class WatchlistElement {
             textScaleFactor: 1.5,
             style: TextStyle(color: Colors.white),
           ),
-          IconButton(icon: Icon(Icons.delete),
+          (delete.widget.location == 1) ? IconButton(icon: Icon(Icons.delete),
             color: Colors.white,
             onPressed: (){
-              print("DELETING");
               delete.deleteWatchlistElement(id).then((void d){
                 delete.watchlistElements().then((lis){
                   if(delete.mounted){
@@ -431,7 +430,7 @@ class WatchlistElement {
                 });
               });
             }
-          ),
+          ) : SizedBox(width: 10),
         ],
       ),
     );

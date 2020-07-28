@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Watchlist.dart';
+import 'Journal.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'util/CircleProgressBar.dart';
@@ -126,33 +127,21 @@ class HomeState extends State<Home> {
         SizedBox(height: 40),
         ListTile(
           onTap: () => goToTab(1, widget.controller),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          title: Row(
             children: <Widget>[
-              Text("Open Positions",
-                textAlign: TextAlign.start,
+              Text("Journal",
                 textScaleFactor: 1.5, 
                 style: TextStyle(color: Colors.grey[200],)
               ),
-              SizedBox(height: 10),
-              Container(
-                padding: EdgeInsets.only(left: 30),
-                child: generatePosition("AAPL", "50", ""),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: 30, top: 30),
-                child: generatePosition("SNAP", "100", ""),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: 30, top: 30),
-                child: Text("more",
-                  textScaleFactor: 0.75, 
-                  style: TextStyle(color: Colors.grey[200], fontWeight: FontWeight.bold,),
-                ),
-              )
-            ]
-          )
+              Card( margin: EdgeInsets.only(left: 20),
+              child: Padding(padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10), child:Text("See More",
+                textScaleFactor: 1, 
+                style: TextStyle(color: Colors.black, fontStyle: FontStyle.italic,)
+              ),),),
+            ],
+          ),
         ),
+        Journal(location: 0),
         SizedBox(height: 20),
       ],
       ),

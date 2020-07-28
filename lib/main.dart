@@ -130,7 +130,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
             controller: _tabController,
             children: <Widget>[
               new goal.Goals(),
-              new journal.Journal(),
+              new journal.Journal(location: 1),
               new home.Home(controller: _tabController),
               new watchlist.Watchlist(location: 1),
               new settings.Settings(notif_daily: _dailyNotif, notif_weekly: _weeklyNotif, cancel_notif: _cancel,),
