@@ -100,11 +100,7 @@ class MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScopeNode currentFocus = FocusScope.of(context);
-
-        if (!currentFocus.hasPrimaryFocus) {
-          currentFocus.unfocus();
-        }
+        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
       },
       child: MaterialApp(
         title: 'Stock Marketplace',

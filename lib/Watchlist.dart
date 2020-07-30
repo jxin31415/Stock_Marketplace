@@ -121,7 +121,7 @@ class WatchlistState extends State<Watchlist> {
         ticker: maps[i]['ticker'],
         title: maps[i]['title'],
         entries: s.split(','),
-        delete: this,
+        parentState: this,
         controller: TextEditingController(),
       );
     });
@@ -392,11 +392,12 @@ class WatchlistElement {
   final String ticker;
   final String title;
   final List<String> entries;
-  final WatchlistState delete;
+  final WatchlistState parentState;
   final TextEditingController controller;
 
+  final _formKey = GlobalKey<FormState>();
 
-  WatchlistElement({this.id, this.ticker, this.title, this.entries, this.delete, this.controller});
+  WatchlistElement({this.id, this.ticker, this.title, this.entries, this.parentState, this.controller});
 
   Map<String, dynamic> toMap() {
     return {
@@ -407,31 +408,195 @@ class WatchlistElement {
     };
   }
 
-  List<Widget> list(BuildContext context){
+  Widget editForm(BuildContext context){
     List<Widget> lis = new List();
+    parentState.newEntries = entries;
+    lis.add(
+      TextFormField(
+        decoration: const InputDecoration(
+          hintText: 'Enter New Ticker',
+        ),
+
+        initialValue: ticker,
+
+        validator: (value){
+          if(value.isEmpty){
+            return 'Please enter a valid ticker';
+          }
+          return null;
+        },
+
+        onSaved: (val) {
+          if(parentState.mounted){
+            parentState.setState((){
+              parentState.newTicker = val;
+            });
+          }
+        }
+      ),
+    );
+
+    lis.add(
+      TextFormField(
+        decoration: const InputDecoration(
+          hintText: 'Enter New Title',
+        ),
+
+        initialValue: title,
+
+        validator: (value){
+          if(value.isEmpty){
+            return 'Please enter a valid title';
+          }
+          return null;
+        },
+
+        onSaved: (val) {
+          if(parentState.mounted){
+            parentState.setState((){
+              parentState.newTitle = val;
+            });
+          }
+        }
+      ),
+    );
+
+    lis.add(SizedBox(height:15));
+    
+    for(var i = 0; i < entries.length; i++){
+      if(entries[i] != ''){
+        lis.add(RichText(
+          text: TextSpan(
+            children: [
+              WidgetSpan(
+                child: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: (){
+                    parentState.newEntries[i] = '';
+                  }
+                ),
+              ),
+              TextSpan(
+                text: entries[i],
+                style: TextStyle(fontSize: 20, color: Colors.black),
+              )
+            ],
+          ),
+        ));
+      }
+      lis.add(SizedBox(height: 20));
+    }
+
     lis.add(
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Text(ticker,
-            textScaleFactor: 1.5,
-            style: TextStyle(color: Colors.white),
+        children: [
+          RaisedButton(
+            color: Colors.blue,
+            onPressed: () async {
+              if (_formKey.currentState.validate()) {
+                _formKey.currentState.save();
+                for(var i = 0; i < parentState.newEntries.length; i++){
+                  if(parentState.newEntries[i] == ''){
+                    parentState.newEntries.removeAt(i);
+                    i--;
+                  }
+                }
+                await parentState.updateWatchlist(WatchlistElement(id: this.id, ticker: parentState.newTicker, title: parentState.newTitle, entries: parentState.newEntries));
+                if(parentState.mounted){
+                  parentState.setState((){
+                    parentState.watchlistElements().then((lis){
+                      parentState.setState(() {
+                        parentState.elements = lis;
+                      });
+                      _formKey.currentState.reset();
+                      parentState.newEntries.clear();
+                    });
+                  });
+                }
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text('Submit'),
           ),
-          (delete.widget.location == 1) ? IconButton(icon: Icon(Icons.delete),
-            color: Colors.white,
-            onPressed: (){
-              delete.deleteWatchlistElement(id).then((void d){
-                delete.watchlistElements().then((lis){
-                  if(delete.mounted){
-                    delete.setState(() {
-                      delete.elements = lis;
+          RaisedButton(
+            color: Colors.red,
+            onPressed: () async {
+              parentState.deleteWatchlistElement(id).then((void d){
+                parentState.watchlistElements().then((lis){
+                  if(parentState.mounted){
+                    parentState.setState(() {
+                      parentState.elements = lis;
                     });
                   }
                 });
               });
-            }
-          ) : SizedBox(width: 10),
+              Navigator.of(context).pop();
+            },
+            child: Text('Delete'),
+          ),
         ],
+      ),
+    );
+
+    return AlertDialog(
+      backgroundColor: Colors.grey[800],
+      content: Stack(
+        overflow: Overflow.visible,
+        children: <Widget>[
+          Positioned(
+            right: -40.0,
+            top: -40.0,
+            child: InkResponse(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: CircleAvatar(
+                child: Icon(Icons.close),
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ),
+          Form(
+            key: _formKey,
+            child: Card(
+              child: Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: lis,
+              ),),
+              elevation: 50,
+              shadowColor: Colors.purple[700],
+              color: Colors.white,
+            )
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> list(BuildContext context){
+    List<Widget> lis = new List();
+    lis.add(
+      InkWell(
+        onTap: (){
+          showDialog(
+            context: context,
+            builder: editForm,
+          );
+        },
+        child: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "$ticker ",
+                style: TextStyle(fontSize: 20),
+              ),
+              (parentState.widget.location == 1) ? WidgetSpan(
+                child: Icon(Icons.edit, size: 24, color: Colors.white),
+              ) : TextSpan(),
+            ],
+          ),
+        ),
       ),
     );
     lis.add(
