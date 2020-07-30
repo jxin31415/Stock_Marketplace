@@ -227,11 +227,8 @@ class _ProgressCardState extends State<ProgressCard> {
   }
 
   _incrementProgress() async {
-    double updated = ((this._progress + 0.1).clamp(0.0, 1.0) * 100);
+    double updated = ((this._progress + 0.1) * 100);
     updated = updated.round() / 100;
-    if(updated > 1){
-      updated = 1;
-    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       this._progress = updated;
@@ -240,11 +237,8 @@ class _ProgressCardState extends State<ProgressCard> {
   }
 
   _decrementProgress() async {
-    double updated = ((this._progress - 0.1).clamp(0.0, 1.0) * 100);
+    double updated = ((this._progress - 0.1) * 100);
     updated = updated.round() / 100;
-    if(updated < 0){
-      updated = 0;
-    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       this._progress = updated;
@@ -255,22 +249,13 @@ class _ProgressCardState extends State<ProgressCard> {
   @override
   Widget build(BuildContext context) {
     Color foreground = Colors.blue[200];  
-    if(_progress >= 1){
-      foreground = Colors.pink[400];
-    } else if (_progress >= 0.9) {
-      foreground = Colors.purple[900];
-    } else if (_progress >= 0.8){
-      foreground = Colors.purple[700];
-    } else if (_progress >= 0.6){
-      foreground = Colors.blue[900];
-    } else if (_progress >= 0.5){
-      foreground = Colors.blue[800];
-    } else if (_progress >= 0.3){
-      foreground = Colors.blue[600];
-    } else if (_progress >= 0.1) {
-      foreground = Colors.blue[400];
+    if(_progress > 0){
+      foreground = Colors.green;
     }
-
+    if(_progress < 0){
+      foreground = Colors.red;
+    }
+    int prog = (this._progress * 100).toInt();
     Color background = foreground.withOpacity(0.2);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -284,14 +269,14 @@ class _ProgressCardState extends State<ProgressCard> {
               child: CircleProgressBar(
                 backgroundColor: background,
                 foregroundColor: foreground,
-                value: this._progress,
+                value: this._progress.clamp(-1.0, 1.0),
               ),
               onTap: _incrementProgress,
               onDoubleTap: _decrementProgress,
             ),
           ),
         ),
-        Text("${this._progress * 100}%", 
+        Text("$prog%", 
           textScaleFactor: 2, 
           style: TextStyle(color: Colors.grey[100],)
         ),
