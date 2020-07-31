@@ -294,12 +294,14 @@ class WatchlistState extends State<Watchlist> {
         return new Scaffold(
           backgroundColor: Colors.grey[850],
           body: ListView(
+            key: Key(lis.length.toString()),
             padding: EdgeInsets.all(30),
             children: lis,
           )
         );
       } else {
         return Column(
+          key: Key(current.length.toString()),
           children: lis,
         );
       }

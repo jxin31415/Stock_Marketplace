@@ -371,6 +371,7 @@ class JournalState extends State<Journal> {
         return new Scaffold(
           backgroundColor: Colors.grey[850],
           body: ListView(
+            key: Key(current.length.toString()),
             padding: EdgeInsets.all(30),
             children: current,
           )
